@@ -89,8 +89,7 @@ const levels = [
         name: "Emergência",
         background: "assets/images/cenariofase2.jfif",
 
-        speed: 13.0,
-        turnSpeed: 0.060,
+        speed: 7.0,
         laneWidth: 210,
 
 

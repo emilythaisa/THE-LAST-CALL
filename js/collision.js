@@ -368,89 +368,19 @@ function checkWallCollision(player) {
     ];
 
     if (level.route && level.route.length > 1) {
-        if (currentLevel === 1) {
-            const roadHalfWidth = level.laneWidth / 2;
-            const mask = getPlayerOpaqueMask(player);
+        const routeLimit =
+            level.laneWidth / 2 - radius;
+        const routeLimitSquared =
+            routeLimit * routeLimit;
 
-            if (!mask) {
-                return true;
-            }
-
-            const pixelPadding = Math.SQRT1_2;
-            const visibleLimit = roadHalfWidth - pixelPadding;
-            const visibleLimitSquared =
-                visibleLimit * visibleLimit;
-            const maskRadius = Math.hypot(
-                Math.max(Math.abs(mask.left), Math.abs(mask.right)),
-                Math.max(Math.abs(mask.top), Math.abs(mask.bottom))
-            );
-            const candidateLimit =
-                visibleLimit + maskRadius;
-            const candidateLimitSquared =
-                candidateLimit * candidateLimit;
-            const routeSegments = [];
-
-            for (let i = 0; i < level.route.length - 1; i++) {
-                const start = level.route[i];
-                const end = level.route[i + 1];
-                const centerDistanceSquared =
-                    pointToSegmentDistanceSquared(player, start, end);
-
-                if (centerDistanceSquared <= candidateLimitSquared) {
-                    routeSegments.push({
-                        start,
-                        end,
-                        centerDistanceSquared
-                    });
-                }
-            }
-
-            routeSegments.sort((a, b) =>
-                a.centerDistanceSquared - b.centerDistanceSquared
-            );
-
-            const cos = Math.cos(player.angle);
-            const sin = Math.sin(player.angle);
-
-            for (const pixel of mask.pixels) {
-                const point = {
-                    x: player.x + pixel.x * cos - pixel.y * sin,
-                    y: player.y + pixel.x * sin + pixel.y * cos
-                };
-                let insideRoute = false;
-
-                for (const segment of routeSegments) {
-                    if (
-                        pointToSegmentDistanceSquared(
-                            point,
-                            segment.start,
-                            segment.end
-                        ) <= visibleLimitSquared
-                    ) {
-                        insideRoute = true;
-                        break;
-                    }
-                }
-
-                if (!insideRoute) {
-                    return true;
-                }
-            }
-        } else {
-            const routeLimit =
-                level.laneWidth / 2 - radius;
-            const routeLimitSquared =
-                routeLimit * routeLimit;
-
-            if (
-                routeLimit <= 0 ||
-                collisionPoints.some((point) =>
-                    distanceToRouteSquared(point, level.route) >
-                        routeLimitSquared
-                )
-            ) {
-                return true;
-            }
+        if (
+            routeLimit <= 0 ||
+            collisionPoints.some((point) =>
+                distanceToRouteSquared(point, level.route) >
+                    routeLimitSquared
+            )
+        ) {
+            return true;
         }
     }
 
