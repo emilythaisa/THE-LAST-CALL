@@ -8,7 +8,6 @@ function loadGameImage(source) {
 
 
 const screenImages = {
-    initial: loadGameImage("assets/images/imageminicial.jfif"),
     hubBackground: loadGameImage("assets/images/imagemoficial.png"),
     gameOver: loadGameImage("assets/images/gameover.jfif"),
     victory: loadGameImage("assets/images/win.jfif")
@@ -33,6 +32,8 @@ const patientMarkerImage =
 
 const explosionSpriteSheet =
     loadGameImage("assets/images/explosao.png");
+
+const obstacleImage = loadGameImage("assets/images/obstaculo.png");
 
 
 const levelBackgrounds = levels.map((level) =>
@@ -132,14 +133,11 @@ function drawCoverImage(ctx, image, width, height, sourceRect) {
 
 
 function getEndingScreenCrop(image) {
-
-    const topBarHeight = 70;
-
     return {
         x: 0,
-        y: topBarHeight,
+        y: 0,
         width: image.naturalWidth,
-        height: image.naturalHeight - topBarHeight
+        height: image.naturalHeight
     };
 }
 
@@ -385,6 +383,8 @@ function drawIntro(timestamp) {
     }
 
     if (introStartTime === null) {
+        // A introdução visual começa normalmente.
+        // O áudio será liberado após a primeira interação do usuário.
         introStartTime = timestamp;
     }
 
@@ -471,6 +471,7 @@ function startLevel(levelIndex) {
     explosion = null;
 
     gameState = GAME_STATES.PLAYING;
+    startEngineSound();
 }
 
 
@@ -806,7 +807,7 @@ function startExplosion(timestamp) {
 
         return;
     }
-
+    stopEngineSound();
     sawCollisionTriggered = true;
     player.direction.left = false;
     player.direction.right = false;
@@ -842,7 +843,7 @@ function completeLevel() {
 
     gameState =
         GAME_STATES.VICTORY;
-
+    stopEngineSound();
     playVictorySound();
 }
 
@@ -1276,61 +1277,80 @@ function handleScreenClick(event) {
         return;
     }
 
-    const image =
-        gameState === GAME_STATES.GAME_OVER
-            ? screenImages.gameOver
-            : screenImages.victory;
-
-    if (!isImageReady(image)) {
-        return;
-    }
-
     const bounds = canvas.getBoundingClientRect();
     const canvasX =
         (event.clientX - bounds.left) * canvas.width / bounds.width;
     const canvasY =
         (event.clientY - bounds.top) * canvas.height / bounds.height;
 
-    const geometry =
-        getCoverImageGeometry(
-            image,
-            canvas.width,
-            canvas.height,
-            getEndingScreenCrop(image)
-        );
-
-    const imageX =
-        geometry.sourceX + canvasX / geometry.scale;
-    const imageY =
-        geometry.sourceY + canvasY / geometry.scale;
-
-    const clicked = (x, y, width, height) =>
-        imageX >= x &&
-        imageX <= x + width &&
-        imageY >= y &&
-        imageY <= y + height;
-
+    // --- CLIQUES DA TELA DE GAME OVER ---
     if (gameState === GAME_STATES.GAME_OVER) {
-
-        if (clicked(510, 450, 275, 155)) {
+        // Botão 1: TENTAR NOVAMENTE (Esquerda)
+        if (
+            canvasX >= 378 &&
+            canvasX <= 378 + 500 &&
+            canvasY >= 485 &&
+            canvasY <= 485 + 135
+        ) {
             startLevel(currentLevel);
-        } else if (clicked(795, 450, 285, 155)) {
+            return;
+        }
+
+        // Botão 2: MENU PRINCIPAL (Direita)
+        if (
+            canvasX >= 918 &&
+            canvasX <= 918 + 500 &&
+            canvasY >= 485 &&
+            canvasY <= 485 + 135
+        ) {
             gameState = GAME_STATES.HUB;
+            return;
         }
 
         return;
     }
 
-    if (clicked(465, 535, 210, 125)) {
-        const nextLevel = (currentLevel + 1) % levels.length;
-        selectedLevel = nextLevel;
-        startLevel(nextLevel);
-    } else if (clicked(695, 535, 210, 125)) {
-        startLevel(currentLevel);
-    } else if (clicked(930, 535, 200, 125)) {
-        gameState = GAME_STATES.HUB;
+    // --- CLIQUES DA TELA DE VITÓRIA ---
+    if (gameState === GAME_STATES.VICTORY) {
+        // Botão 1: PRÓXIMA FASE (Esquerda)
+        if (
+            canvasX >= 180 &&
+            canvasX <= 180 + 465 &&
+            canvasY >= 540 &&
+            canvasY <= 540 + 125
+        ) {
+            const nextLevel = (currentLevel + 1) % levels.length;
+            selectedLevel = nextLevel;
+            startLevel(nextLevel);
+            return;
+        }
+
+        // Botão 2: TENTAR NOVAMENTE (Centro)
+        if (
+            canvasX >= 680 &&
+            canvasX <= 680 + 450 &&
+            canvasY >= 540 &&
+            canvasY <= 540 + 125
+        ) {
+            startLevel(currentLevel);
+            return;
+        }
+
+        // Botão 3: MENU PRINCIPAL (Direita)
+        if (
+            canvasX >= 1160 &&
+            canvasX <= 1160 + 450 &&
+            canvasY >= 540 &&
+            canvasY <= 540 + 125
+        ) {
+            gameState = GAME_STATES.HUB;
+            return;
+        }
+
+        return;
     }
 }
+
 
 
 canvas.addEventListener("click", handleScreenClick);

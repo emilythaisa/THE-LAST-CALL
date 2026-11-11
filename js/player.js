@@ -2,8 +2,15 @@
 // JOGADOR / AMBULÂNCIA
 // ============================================================
 
-const ambulanceSprite = new Image();
-ambulanceSprite.src = "assets/images/ambulancia-jogador.png";
+// Sprite-base estático: mantém exatamente a mesma geometria e posição
+// durante toda a animação. Apenas os efeitos da sirene piscam.
+const ambulanceFallbackSprite = new Image();
+ambulanceFallbackSprite.src = "assets/images/ambulancia-jogador.png";
+
+const AMBULANCE_LIGHTS = {
+    frameDuration: 130,
+    cycleDuration: 1040
+};
 
 
 class Player {
@@ -53,7 +60,7 @@ class Player {
         // Aumente esse valor para deixar o jogo mais rápido.
         // ----------------------------------------------------
 
-        this.speed = 3;
+        this.speed = 5;
 
 
         // ----------------------------------------------------
@@ -89,7 +96,7 @@ class Player {
         // Isso evita que os cantos fiquem agarrando nas paredes.
         // ----------------------------------------------------
 
-        this.collisionRadius = 15;
+        this.collisionRadius = 10;
     }
 
 
@@ -154,25 +161,45 @@ class Player {
             directionY * this.speed;
 
 
-        // ----------------------------------------------------
-        // 4. TENTA MOVER
-        // ----------------------------------------------------
-
-        this.x += movementX;
-        this.y += movementY;
-
 
         // ----------------------------------------------------
-        // 5. COLISÃO COM PAREDES
+        // 4. MOVIMENTO COM DESLIZAMENTO NAS PAREDES
         // ----------------------------------------------------
 
-        if (checkWallCollision(this)) {
+        // Divide o deslocamento em pequenos passos para evitar
+        // que a ambulância fique presa em cantos e curvas.
+        const maxStep = 2;
 
-            // Se bateu, desfaz o movimento.
-            this.x -= movementX;
-            this.y -= movementY;
+        const steps = Math.max(
+            1,
+            Math.ceil(
+                Math.max(
+                    Math.abs(movementX),
+                    Math.abs(movementY)
+                ) / maxStep
+            )
+        );
+
+        const stepX = movementX / steps;
+        const stepY = movementY / steps;
+
+        for (let i = 0; i < steps; i++) {
+
+            // Tenta mover horizontalmente.
+            this.x += stepX;
+
+            if (checkWallCollision(this)) {
+                this.x -= stepX;
+            }
+
+            // Tenta mover verticalmente, mesmo que o movimento
+            // horizontal tenha sido bloqueado.
+            this.y += stepY;
+
+            if (checkWallCollision(this)) {
+                this.y -= stepY;
+            }
         }
-
 
         // ----------------------------------------------------
         // 6. LIMITES DO MAPA
@@ -228,21 +255,79 @@ class Player {
 
         ctx.rotate(this.angle);
 
+        // Desenha sempre o mesmo sprite-base, no mesmo retângulo.
+        // Isso impede qualquer deslocamento causado por quadros com
+        // enquadramentos diferentes no spritesheet gerado por IA.
         if (
-            ambulanceSprite.complete &&
-            ambulanceSprite.naturalWidth > 0
+            ambulanceFallbackSprite.complete &&
+            ambulanceFallbackSprite.naturalWidth > 0
         ) {
             ctx.drawImage(
-                ambulanceSprite,
+                ambulanceFallbackSprite,
                 -this.width / 2,
                 -this.height / 2,
                 this.width,
                 this.height
             );
 
+            // Anima somente a iluminação da barra de emergência.
+            // As posições são relativas ao sprite e não afetam o veículo.
+            const phase = Math.floor(
+                performance.now() / AMBULANCE_LIGHTS.frameDuration
+            ) % 8;
+            const leftIsBlue = phase === 2 || phase === 3 || phase === 6;
+            const rightIsBlue = phase === 0 || phase === 1 || phase === 5;
+
+            const lampY = -this.height * 0.105;
+            const lampOffsetX = this.width * 0.155;
+            const lampWidth = this.width * 0.235;
+            const lampHeight = this.height * 0.064;
+
+            const drawLamp = (x, color, intensity) => {
+                const glow = ctx.createRadialGradient(
+                    x, lampY, 0,
+                    x, lampY, this.width * 0.34
+                );
+                glow.addColorStop(0, color === "blue"
+                    ? `rgba(65, 145, 255, ${0.42 * intensity})`
+                    : `rgba(255, 45, 45, ${0.42 * intensity})`);
+                glow.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+                ctx.save();
+                ctx.globalCompositeOperation = "screen";
+                ctx.fillStyle = glow;
+                ctx.fillRect(
+                    x - this.width * 0.34,
+                    lampY - this.height * 0.23,
+                    this.width * 0.68,
+                    this.height * 0.46
+                );
+                ctx.globalAlpha = intensity;
+                ctx.fillStyle = color === "blue"
+                    ? "#4b9dff"
+                    : "#ff3434";
+                drawRoundedRect(
+                    ctx,
+                    x - lampWidth / 2,
+                    lampY - lampHeight / 2,
+                    lampWidth,
+                    lampHeight,
+                    2
+                );
+                ctx.fill();
+                ctx.restore();
+            };
+
+            // Alternância independente das duas metades da sirene.
+            drawLamp(-lampOffsetX, leftIsBlue ? "blue" : "red", phase % 4 < 2 ? 0.9 : 0.48);
+            drawLamp(lampOffsetX, rightIsBlue ? "blue" : "red", phase % 4 < 2 ? 0.9 : 0.48);
+
             ctx.restore();
             return;
         }
+
+        // Caso a imagem-base ainda esteja carregando, o desenho vetorial
+        // abaixo continua servindo como fallback temporário.
 
 
         // ----------------------------------------------------

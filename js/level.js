@@ -17,7 +17,7 @@ const levels = [
         background: "assets/images/cenariofase1.jfif",
 
         // Velocidade da ambulância nessa fase.
-        speed: 4.0018,
+        speed: 5,
         laneWidth: 210,
 
 
@@ -85,107 +85,99 @@ const levels = [
     // FASE 2
     // ==================================================
 
-    {
-        name: "Emergência",
-        background: "assets/images/cenariofase2.jfif",
+    
+{
+    name: "Emergência",
+    background: "assets/images/cenariofase2.png",
 
-        speed: 7.0,
-        laneWidth: 210,
+    speed: 7,
+    laneWidth: 210,
 
 
+    
         route: [
-            { x: 75, y: 620 },
-            { x: 250, y: 640 },
-            { x: 350, y: 630 },
-            { x: 410, y: 600 },
-            { x: 460, y: 550 },
-            { x: 495, y: 490 },
-            { x: 520, y: 430 },
-            { x: 550, y: 370 },
-            { x: 590, y: 320 },
-            { x: 630, y: 285 },
-            { x: 675, y: 260 },
-            { x: 720, y: 250 },
-            { x: 760, y: 260 },
-            { x: 800, y: 285 },
-            { x: 835, y: 325 },
-            { x: 870, y: 365 },
-            { x: 890, y: 385 },
-            { x: 920, y: 430 },
-            { x: 950, y: 475 },
-            { x: 980, y: 515 },
-            { x: 1015, y: 540 },
-            { x: 1050, y: 550 },
-            { x: 1080, y: 545 },
-            { x: 1110, y: 525 },
-            { x: 1135, y: 490 },
-            { x: 1150, y: 450 },
-            { x: 1150, y: 415 },
-            { x: 1140, y: 380 },
-            { x: 1145, y: 350 },
-            { x: 1170, y: 330 },
-            { x: 1200, y: 325 },
-            { x: 1235, y: 335 },
-            { x: 1265, y: 355 },
-            { x: 1290, y: 380 },
-            { x: 1320, y: 400 },
-            { x: 1360, y: 420 },
-            { x: 1400, y: 430 },
-            { x: 1440, y: 430 },
-            { x: 1475, y: 415 },
-            { x: 1500, y: 390 },
-            { x: 1520, y: 360 },
-            { x: 1535, y: 330 },
-            { x: 1540, y: 300 },
-            { x: 1535, y: 270 },
-            { x: 1525, y: 240 },
-            { x: 1515, y: 215 },
-            { x: 1520, y: 190 },
-            { x: 1540, y: 170 },
-            { x: 1570, y: 150 },
-            { x: 1610, y: 135 },
-            { x: 1660, y: 125 },
-            { x: 1710, y: 120 }
+            // Início: subida pela lateral esquerda
+            { x: 80,   y: 80 },
+            { x: 80,   y: 300 },
+            { x: 100,  y: 570 },
+
+            // Curva inferior esquerda
+            { x: 220,  y: 650 },
+            { x: 450,  y: 680 },
+            { x: 650,  y: 680 },
+
+            // Grande curva para cima
+            { x: 780,  y: 610 },
+            { x: 800,  y: 430 },
+            { x: 800,  y: 300 },
+
+            // Curva central superior
+            { x: 900,  y: 250 },
+            { x: 1080, y: 270 },
+            { x: 1180, y: 350 },
+
+            // Curva longa à direita
+            { x: 1300, y: 450 },
+            { x: 1450, y: 500 },
+            { x: 1550, y: 430 },
+
+            // Trecho final
+            { x: 1660, y: 350 },
+            { x: 1710, y: 350 }
         ],
 
 
+            
         saws: [
-
+            // Curva inferior esquerda
             {
-                x: 520,
-                y: 430,
-                width: 68,
-                height: 68
+                x: 125,
+                y: 570,
+                width: 60,
+                height: 60
             },
 
+            // Curva na parte inferior central
             {
-                x: 854,
-                y: 347,
-                width: 68,
-                height: 68
+                x: 650,
+                y: 680,
+                width: 60,
+                height: 60
             },
 
+            // Curva superior central
             {
-                x: 1150,
-                y: 450,
-                width: 68,
-                height: 68
+                x: 900,
+                y: 250,
+                width: 60,
+                height: 60
             },
 
+            // Curva do lado direito
             {
-                x: 1520,
-                y: 190,
-                width: 68,
-                height: 68
+                x: 1450,
+                y: 500,
+                width: 60,
+                height: 60
             }
-
         ],
 
+        base: {
+            x: 44,
+            y: 44,
+            width: 72,
+            height: 72
+        },
 
-        base: { x: 39, y: 564, width: 72, height: 72 },
-        patient: { x: 1674, y: 104, width: 72, height: 72 }
+        patient: {
+            x: 1665,
+            y: 305,
+            width: 72,
+            height: 72
+        }
 
-    },
+},
+
 
 
     // ==================================================
@@ -196,7 +188,7 @@ const levels = [
         name: "Emergência Máxima",
         background: "assets/images/cenariofase3.jfif",
 
-        speed: 6.3672,
+        speed: 8,
         laneWidth: 210,
 
 

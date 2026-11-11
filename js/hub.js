@@ -45,7 +45,7 @@ function drawHub(ctx) {
 
     if (!isImageReady(screenImages.hubBackground)) {
         ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 54px Arial";
+        ctx.font = "bold 54px 'Arial Black', Impact, sans-serif";
         ctx.fillText(
             "LAST CALL",
             WORLD_WIDTH / 2,
@@ -53,11 +53,11 @@ function drawHub(ctx) {
         );
     }
 
-    ctx.font = "24px Arial";
+    ctx.font = "24px 'Arial Black', Impact, sans-serif";
     ctx.fillStyle = "#aaaaaa";
 
     ctx.fillText(
-        "SELECIONE UMA FASE",
+        "",
         WORLD_WIDTH / 2,
         140
     );
@@ -86,26 +86,16 @@ function drawHub(ctx) {
     // --------------------------------------------------------
 
     for (let i = 0; i < 3; i++) {
-
         const x = startX + i * (cardWidth + gap);
         const y = startY;
 
         const isSelected = i === selectedLevel;
         const isCompleted = completedLevels[i];
 
-
         // ----------------------------------------------------
         // PRÉVIA DO CENÁRIO
         // ----------------------------------------------------
-
-        drawRoundedRect(
-            ctx,
-            x,
-            y,
-            cardWidth,
-            cardHeight,
-            20
-        );
+        drawRoundedRect(ctx, x, y, cardWidth, cardHeight, 15);
 
         ctx.save();
         ctx.clip();
@@ -113,9 +103,7 @@ function drawHub(ctx) {
         const previewImage = levelBackgrounds[i];
 
         if (isImageReady(previewImage)) {
-            const imageGeometry =
-                getCoverImageGeometry(previewImage, cardWidth, cardHeight);
-
+            const imageGeometry = getCoverImageGeometry(previewImage, cardWidth, cardHeight);
             ctx.drawImage(
                 previewImage,
                 imageGeometry.sourceX,
@@ -128,170 +116,87 @@ function drawHub(ctx) {
                 cardHeight
             );
         } else {
-            ctx.fillStyle = isCompleted ? "#173d25" : "#292929";
+            ctx.fillStyle = isCompleted ? "#173d25" : "#1a1a1a";
             ctx.fillRect(x, y, cardWidth, cardHeight);
         }
 
-        ctx.fillStyle = isCompleted
-            ? "rgba(0, 35, 12, 0.4)"
-            : "rgba(0, 0, 0, 0.3)";
+        // DEGRADÊ SOBRE O CARTÃO (Transparente em cima, escuro embaixo para o texto)
+        const gradient = ctx.createLinearGradient(x, y, x, y + cardHeight);
+        gradient.addColorStop(0, "rgba(0, 0, 0, 0)");
+        gradient.addColorStop(0.4, "rgba(0, 0, 0, 0.2)");
+        gradient.addColorStop(1, isCompleted ? "rgba(0, 35, 12, 0.95)" : "rgba(0, 0, 0, 0.95)");
+        
+        ctx.fillStyle = gradient;
         ctx.fillRect(x, y, cardWidth, cardHeight);
         ctx.restore();
 
 
         // ----------------------------------------------------
-        // BORDA
+        // BORDA COM GLOW (Brilho)
         // ----------------------------------------------------
-
         if (isSelected) {
-
-            // Fase atualmente selecionada
-            ctx.strokeStyle = "#ffd000";
-            ctx.lineWidth = 5;
-
+            ctx.strokeStyle = "#e5a939"; // Amarelo/Dourado do logo
+            ctx.lineWidth = 6;
+            ctx.shadowColor = "#e5a939";
+            ctx.shadowBlur = 15; // Efeito de brilho neon
         } else if (isCompleted) {
-
-            // Fase concluída
-            ctx.strokeStyle = "#31c95b";
+            ctx.strokeStyle = "#258f43";
             ctx.lineWidth = 4;
-
+            ctx.shadowBlur = 0;
         } else {
-
-            ctx.strokeStyle = "#555555";
+            ctx.strokeStyle = "#333333";
             ctx.lineWidth = 3;
+            ctx.shadowBlur = 0;
         }
 
-
-        drawRoundedRect(
-            ctx,
-            x,
-            y,
-            cardWidth,
-            cardHeight,
-            20
-        );
-
+        drawRoundedRect(ctx, x, y, cardWidth, cardHeight, 15);
         ctx.stroke();
+        ctx.shadowBlur = 0; // Reseta a sombra para não bugar o resto
 
 
         // ----------------------------------------------------
-        // NÚMERO DA FASE
+        // TEXTOS DO CARTÃO
         // ----------------------------------------------------
+        const titles = ["INTRODUÇÃO", "DESAFIO MÉDIO", "DESAFIO EXTREMO"];
+        const title = titles[i];
 
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "bold 38px Arial";
+        ctx.textAlign = "center";
+        ctx.shadowColor = "#000000";
+        ctx.shadowBlur = 6;
 
-        ctx.fillText(
-            `FASE ${i + 1}`,
-            x + cardWidth / 2,
-            y + 65
-        );
+        // Título da fase (Movido para baixo)
+        ctx.fillStyle = isSelected ? "#e5a939" : "#ffffff";
+        ctx.font = "900 32px 'Arial Black', Impact, sans-serif";
+        ctx.fillText(title, x + cardWidth / 2, y + cardHeight - 65);
 
-
-        // ----------------------------------------------------
-        // DESCRIÇÃO
-        // ----------------------------------------------------
-
-        ctx.font = "22px Arial";
-
-        if (i === 0) {
-
-            ctx.fillStyle = "#cccccc";
-
-            ctx.fillText(
-                "INTRODUÇÃO",
-                x + cardWidth / 2,
-                y + 125
-            );
-
-        } else if (i === 1) {
-
-            ctx.fillStyle = "#cccccc";
-
-            ctx.fillText(
-                "DESAFIO MÉDIO",
-                x + cardWidth / 2,
-                y + 125
-            );
-
-        } else {
-
-            ctx.fillStyle = "#cccccc";
-
-            ctx.fillText(
-                "DESAFIO EXTREMO",
-                x + cardWidth / 2,
-                y + 125
-            );
-        }
-
-
-        // ----------------------------------------------------
-        // STATUS
-        // ----------------------------------------------------
-
-        if (isCompleted) {
-
-            ctx.fillStyle = "#31c95b";
-            ctx.font = "bold 24px Arial";
-
-            ctx.fillText(
-                "✓ CONCLUÍDA",
-                x + cardWidth / 2,
-                y + 190
-            );
-
-        } else {
-
-            ctx.fillStyle = "#888888";
-            ctx.font = "20px Arial";
-
-            ctx.fillText(
-                "NÃO CONCLUÍDA",
-                x + cardWidth / 2,
-                y + 190
-            );
-        }
-
-
-        // ----------------------------------------------------
-        // INDICADOR DA FASE SELECIONADA
-        // ----------------------------------------------------
-
+        // Indicador de status (Pressione Enter ou Concluída)
         if (isSelected) {
-
-            ctx.fillStyle = "#ffd000";
-            ctx.font = "bold 18px Arial";
-
-            ctx.fillText(
-                "PRESSIONE ENTER",
-                x + cardWidth / 2,
-                y + 245
-            );
+            ctx.fillStyle = "#ffffff";
+            ctx.font = "bold 18px 'Arial Black', Impact, sans-serif";
+            ctx.fillText("▶ PRESSIONE ENTER ◀", x + cardWidth / 2, y + cardHeight - 25);
+        } else if (isCompleted) {
+            ctx.fillStyle = "#31c95b";
+            ctx.font = "bold 18px 'Arial Black', Impact, sans-serif";
+            ctx.fillText("CONCLUÍDA", x + cardWidth / 2, y + cardHeight - 25);
         }
 
-        ctx.shadowBlur = 0;
+        ctx.shadowBlur = 0; // Reseta a sombra
     }
 
 
     // --------------------------------------------------------
-    // INSTRUÇÕES
+    // INSTRUÇÕES GERAIS (Rodapé)
     // --------------------------------------------------------
+    ctx.fillStyle = "#bbbbbb";
+    ctx.font = "bold 20px 'Arial Black', Impact, sans-serif";
+    ctx.shadowColor = "#000000";
+    ctx.shadowBlur = 8;
+    ctx.textAlign = "center";
 
-    ctx.fillStyle = "#999999";
-    ctx.font = "20px Arial";
+    ctx.fillText("← →  SELECIONAR FASE", WORLD_WIDTH / 2 - 220, 740);
+    ctx.fillText("ENTER  INICIAR", WORLD_WIDTH / 2 + 220, 740);
 
-    ctx.fillText(
-        "← →  Selecionar fase",
-        WORLD_WIDTH / 2 - 180,
-        710
-    );
-
-    ctx.fillText(
-        "ENTER  Iniciar",
-        WORLD_WIDTH / 2 + 180,
-        710
-    );
+    ctx.shadowBlur = 0;
 }
 
 
